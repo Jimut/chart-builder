@@ -1,0 +1,22 @@
+{
+  "name": "chart-builder",
+  "version": "1.0.0",
+  "description": "Chart builder",
+  "main": "index.js",
+  "scripts": {
+    "prod": "gulp --production",
+    "dev": "gulp watch"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "laravel-elixir": "^6.0.0-9",
+    "laravel-elixir-browsersync-official": "^1.0.0",
+    "laravel-elixir-webpack-official": "^1.0.2"
+  },
+  "dependencies": {    
+    "dragula": "^3.7.2",
+    "fusioncharts": "^3.11.3-sr.1",
+    "jquery": "^3.1.0",
+    "bootstrap-sass": "^3.3.7"
+  }
+}
