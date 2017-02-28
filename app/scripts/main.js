@@ -114,6 +114,9 @@ ChartBuilder.prototype.attachDragHandler = function () {
 ChartBuilder.prototype.chartConstruct = function () {
     var that = this;
 
+    if (this.chart !== undefined && !this.chart.disposed)
+        this.chart.dispose();
+
     if (this.selectedDimensions.length < 1)
         return;
 
@@ -138,9 +141,9 @@ ChartBuilder.prototype.chartConstruct = function () {
         dataSource = this.pieDataBuilder();
     }
 
-    console.log('Constructing now');
-    console.log('Dimensions', this.selectedDimensions);
-    console.log('Measures', this.selectedMeasures);
+    // console.log('Constructing now');
+    // console.log('Dimensions', this.selectedDimensions);
+    // console.log('Measures', this.selectedMeasures);
 
     var chartLiteral = {
         type: type,
@@ -178,7 +181,7 @@ ChartBuilder.prototype.mscolumnDataBuilder = function () {
         category: category
     }];
     
-    console.log('categories', categories);
+    // console.log('categories', categories);
 
     var dataset = [];
     for (var i = 0; i < this.selectedMeasures.length; i++) {
@@ -210,7 +213,7 @@ ChartBuilder.prototype.mscolumnDataBuilder = function () {
         });
     }
 
-    console.log('dataset', dataset);
+    // console.log('dataset', dataset);
 
     return {
         chart: chart,
@@ -240,7 +243,7 @@ ChartBuilder.prototype.pieDataBuilder = function () {
         }
     }
 
-    console.log('data', data);
+    // console.log('data', data);
 
     return {
         chart: chart,
