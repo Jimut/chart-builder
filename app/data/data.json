@@ -1,0 +1,31 @@
+{
+    "Brand": {
+        "Samsung": {
+            "Revenues": 3000,
+            "Sales": 200,
+            "Orders": 2000
+        },
+        "Apple": {
+            "Revenues": 4000,
+            "Sales": 700,
+            "Orders": 1000
+        },
+        "LG": {
+            "Revenues": 2000,
+            "Sales": 70,
+            "Orders": 8000
+        }
+    },
+    "Category": {
+        "Mobile": {
+            "Revenues": 7000,
+            "Sales": 700,
+            "Orders": 9000
+        },
+        "Tablet": {
+            "Revenues": 14000,
+            "Sales": 400,
+            "Orders": 9000
+        }
+    }
+}

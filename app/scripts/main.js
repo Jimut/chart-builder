@@ -1,6 +1,6 @@
-import FusionChats from 'fusioncharts';
+const FusionChats = require('fusioncharts');
 require("fusioncharts/fusioncharts.charts")(FusionCharts);
-import Dragula from 'dragula';
+const Dragula = require('dragula');
 
 var ChartBuilder = function () {
     this.chartElm = document.getElementById('chart');

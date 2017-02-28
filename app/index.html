@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="description" content="Chart Builder">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title></title>
+
+        <!-- Disable tap highlight on IE -->
+        <meta name="msapplication-tap-highlight" content="no">
+
+        <!-- Web Application Manifest -->
+        <link rel="manifest" href="manifest.json">
+
+        <!-- Add to homescreen for Chrome on Android -->
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="application-name" content="Web Starter Kit">
+        <link rel="icon" sizes="192x192" href="images/touch/chrome-touch-icon-192x192.png">
+
+        <!-- Add to homescreen for Safari on iOS -->
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black">
+        <meta name="apple-mobile-web-app-title" content="Web Starter Kit">
+        <link rel="apple-touch-icon" href="images/touch/apple-touch-icon.png">
+
+        <!-- Tile icon for Win8 (144x144 + tile color) -->
+        <meta name="msapplication-TileImage" content="images/touch/ms-touch-icon-144x144-precomposed.png">
+        <meta name="msapplication-TileColor" content="#2F3BA2">
+
+        <!-- Color the status bar on mobile devices -->
+        <meta name="theme-color" content="#2F3BA2">
+
+        <!-- Bootstrap -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+        <link rel="stylesheet" href="styles/main.css">
+    </head>
+    <body>
+        <nav class="navbar navbar-default">
+            <div class="container-fluid">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">Chart Builder</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-md-2">
+
+                    <h4>Dimensions</h4>
+                    <div id="dimensions" class="well"></div>
+
+                    <h4>Measures</h4>
+                    <div id="measures" class="well"></div>
+
+                </div>
+                <div class="col-md-10">
+
+                    <h4>Selected dimensions</h4>
+                    <div id="selectedDimensions" class="well"></div>
+
+                    <div class="row">
+                        <div class="col-md-3">
+                            <h4>Selected Measures</h4>
+                            <div id="selectedMeasures" class="well"></div>
+
+                            <h4>Chart Type</h4>
+                            <select id="typeSelector" class="form-control">
+                                <option value="column" selected>Column</option>
+                                <option value="bar">Bar</option>
+                                <option value="pie">Pie</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-9">
+                            <div id="chart"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <script src="scripts/bundle.js"></script>
+    </body>
+</html>
