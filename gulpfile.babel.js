@@ -56,11 +56,12 @@ gulp.task('scripts', () =>
     gulp.src([
         './app/scripts/main.js'
     ])
-    .pipe($.sourcemaps.init())
-    .pipe($.babel())
-    .pipe(webpack())
-    .pipe($.sourcemaps.write('.'))
-    .pipe($.rename('bundle.js'))
+    .pipe(webpack({
+        devtool: 'source-map',
+        output: {
+            filename: 'bundle.js',
+        }
+    }))
     .pipe(gulp.dest('app/scripts'))
     .pipe(gulp.dest('dist/scripts'))
 );
@@ -78,8 +79,8 @@ gulp.task('serve', ['scripts', 'styles'], () => {
     });
 
     gulp.watch(['app/**/*.html'], reload);
-    gulp.watch(['app/styles/**/*.{scss,css}'], ['styles', reload]);
-    gulp.watch(['app/scripts/**/*.js'], ['scripts', reload]);
+    gulp.watch(['app/styles/main.scss'], ['styles', reload]);
+    gulp.watch(['app/scripts/main.js'], ['scripts', reload]);
     gulp.watch(['app/images/**/*'], reload);
 });
 

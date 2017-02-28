@@ -1,41 +1,41 @@
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-
+/******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
-
+/******/
 /******/ 		// Check if module is in cache
 /******/ 		if(installedModules[moduleId])
 /******/ 			return installedModules[moduleId].exports;
-
+/******/
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			exports: {},
 /******/ 			id: moduleId,
 /******/ 			loaded: false
 /******/ 		};
-
+/******/
 /******/ 		// Execute the module function
 /******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-
+/******/
 /******/ 		// Flag the module as loaded
 /******/ 		module.loaded = true;
-
+/******/
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-
-
+/******/
+/******/
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
-
+/******/
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-
+/******/
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
-
+/******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
 /******/ })
@@ -47,8 +47,8 @@
 	const Dragula = __webpack_require__(1);
 	const FusionChats = __webpack_require__(13);
 	__webpack_require__(15)(FusionCharts);
-
-
+	
+	
 	var ChartBuilder = function (dataUrl) {
 	    this.chartElm = document.getElementById('chart');
 	    this.dimensionsElm = document.getElementById('dimensions');
@@ -57,68 +57,37 @@
 	    this.selectedMeasuresElm = document.getElementById('selectedMeasures');
 	    this.typeSelectorElm = document.getElementById('typeSelector');
 	    this.dataUrl = dataUrl;
-
+	
 	    this.dimensions = [];
 	    this.selectedDimensions = [];
 	    this.measures = [];
 	    this.selectedMeasures = [];
-
+	
 	    this.attachDragHandler();
 	    this.parseData();
-
+	
 	    this.typeSelectorElm.addEventListener('change', this.chartConstruct.bind(this));
 	};
-
-	ChartBuilder.prototype.attachDragHandler = function () {
-	    var that = this;
-	    var dimDragger = Dragula([this.dimensionsElm, this.selectedDimensionsElm]);
-	    var mesDragger = Dragula([this.measuresElm, this.selectedMeasuresElm]);
-
-	    dimDragger.on('drop', function (el, target, source, sibling) {
-	        if (target === that.selectedDimensionsElm && source === that.dimensionsElm) {
-	            that.dimensions.pop(el.innerText);
-	            that.selectedDimensions.push(el.innerText);
-	        }
-
-	        if (target === that.dimensionsElm && source === that.selectedDimensionsElm) {
-	            that.dimensions.push(el.innerText);
-	            that.selectedDimensions.pop(el.innerText);
-	        }
-
-	        that.chartConstruct();
-	    });
-
-	    mesDragger.on('drop', function (el, target, source, sibling) {
-	        if (target === that.selectedMeasuresElm && source === that.measuresElm) {
-	            that.measures.pop(el.innerText);
-	            that.selectedMeasures.push(el.innerText);
-	        }
-
-	        if (target === that.measuresElm && source === that.selectedMeasuresElm) {
-	            that.measures.push(el.innerText);
-	            that.selectedMeasures.pop(el.innerText);
-	        }
-
-	        that.chartConstruct();
-	    });
-	};
-
+	
 	ChartBuilder.prototype.parseData = function () {
 	    var that = this;
-
+	
 	    fetch(this.dataUrl).then(function (resp) {
 	        return resp.json();
 	    }).then(function (json) {
 	        that.data = json;
-	        that.addDimensions(Object.getOwnPropertyNames(that.data));
-
-	        var firstDimChild = Object.getOwnPropertyNames(that.data[that.dimensions[0]])[0];
-	        that.addMeasures(Object.getOwnPropertyNames(that.data[that.dimensions[0]][firstDimChild]));
+	
+	        that.addDimensions(Object.keys(that.data));
+	
+	        var firstDim = that.data[that.dimensions[0]];
+	        var firstDimChild = Object.keys(firstDim)[0];
+	
+	        that.addMeasures(Object.keys(firstDim[firstDimChild]));
 	    }).catch(function () {
-	        console.log('There is an error is fetching data');
+	        console.log('There is an error is fetching and storing data');
 	    });
 	};
-
+	
 	ChartBuilder.prototype.addDimensions = function (dims) {
 	    var that = this;
 	    dims.forEach(function (dim) {
@@ -128,11 +97,11 @@
 	        label.classList.add('label-default');
 	        label.appendChild(text);
 	        that.dimensionsElm.appendChild(label);
-
+	
 	        that.dimensions.push(dim);
 	    });
 	};
-
+	
 	ChartBuilder.prototype.addMeasures = function (meas) {
 	    var that = this;
 	    meas.forEach(function (mes) {
@@ -142,25 +111,66 @@
 	        label.classList.add('label-default');
 	        label.appendChild(text);
 	        that.measuresElm.appendChild(label);
-
+	
 	        that.measures.push(mes);
 	    });
 	};
-
+	
+	ChartBuilder.prototype.attachDragHandler = function () {
+	    var that = this;
+	    var dimDragger = Dragula([this.dimensionsElm, this.selectedDimensionsElm]);
+	    var mesDragger = Dragula([this.measuresElm, this.selectedMeasuresElm]);
+	
+	    var arrayRemove = function (arr, elm) {
+	        var index = arr.indexOf(elm);
+	        if (index > -1) {
+	            arr.splice(index, 1);
+	        }
+	    };
+	
+	    dimDragger.on('drop', function (el, target, source, sibling) {
+	        if (target === that.selectedDimensionsElm && source === that.dimensionsElm) {
+	            that.selectedDimensions.push(el.innerText);
+	            arrayRemove(that.dimensions, el.innerText);
+	        }
+	
+	        if (target === that.dimensionsElm && source === that.selectedDimensionsElm) {
+	            that.dimensions.push(el.innerText);
+	            arrayRemove(that.selectedDimensions, el.innerText);
+	        }
+	
+	        that.chartConstruct();
+	    });
+	
+	    mesDragger.on('drop', function (el, target, source, sibling) {
+	        if (target === that.selectedMeasuresElm && source === that.measuresElm) {
+	            that.selectedMeasures.push(el.innerText);
+	            arrayRemove(that.measures, el.innerText);
+	        }
+	
+	        if (target === that.measuresElm && source === that.selectedMeasuresElm) {
+	            that.measures.push(el.innerText);
+	            arrayRemove(that.selectedMeasures, el.innerText);
+	        }
+	
+	        that.chartConstruct();
+	    });
+	};
+	
 	ChartBuilder.prototype.chartConstruct = function () {
 	    var that = this;
-
+	
 	    if (this.selectedDimensions.length < 1)
 	        return;
-
+	
 	    if (this.selectedMeasures.length < 1)
 	        return;
-
-
+	
+	
 	    var selectedOption = this.typeSelectorElm.selectedOptions[0].value;
 	    var type = 'mscolumn2d';
 	    var dataSource;
-
+	
 	    if (selectedOption === 'column') {
 	        type = 'mscolumn2d';
 	        dataSource = this.mscolumnDataBuilder();
@@ -173,11 +183,11 @@
 	        type = 'pie2d';
 	        dataSource = this.pieDataBuilder();
 	    }
-
+	
 	    console.log('Constructing now');
-	    console.log(this.selectedDimensions);
-	    console.log(this.selectedMeasures);
-
+	    console.log('Dimensions', this.selectedDimensions);
+	    console.log('Measures', this.selectedMeasures);
+	
 	    var chartLiteral = {
 	        type: type,
 	        renderAt: this.chartElm,
@@ -186,26 +196,26 @@
 	        dataFormat: 'json',
 	        dataSource: dataSource
 	    };
-
+	
 	    FusionChats.ready(function () {
 	        that.chart = new FusionChats(chartLiteral).render();
 	    });
 	};
-
+	
 	ChartBuilder.prototype.mscolumnDataBuilder = function () {
 	    var chart = {};
-
+	
 	    var category = [];
 	    for (var i = 0; i < this.selectedDimensions.length; i++) {
 	        var sd = this.selectedDimensions[i];
-
+	
 	        var dimKeys = Object.keys(this.data[sd]);
 	        for (var j = 0; j < dimKeys.length; j++) {
 	            category.push({
 	                label: dimKeys[j]
 	            });
 	        }
-
+	
 	        category.push({
 	            vLine: true
 	        });
@@ -213,51 +223,54 @@
 	    var categories = [{
 	        category: category
 	    }];
-	    console.log(categories);
-
+	    
+	    console.log('categories', categories);
+	
 	    var dataset = [];
 	    for (var i = 0; i < this.selectedMeasures.length; i++) {
 	        var sm = this.selectedMeasures[i];
 	        var smData = [];
-
+	
 	        for (var j = 0; j < categories[0].category.length; j++) {
 	            var cat = categories[0].category[j];
-
+	
 	            if (!cat.label)
 	                continue;
-
+	
 	            var val;
-
+	
 	            for (var k = 0; k < this.selectedDimensions.length; k++) {
-	                // console.log(this.selectedDimensions[k], cat.label, sm);
 	                if (this.data[this.selectedDimensions[k]][cat.label]) {
 	                    val = this.data[this.selectedDimensions[k]][cat.label][sm];
 	                }
 	            }
-
+	
 	            smData.push({
 	                value: val
 	            });
 	        }
-
+	
 	        dataset.push({
 	            seriesname: sm,
 	            data: smData
 	        });
 	    }
-	    console.log(dataset);
-
+	
+	    console.log('dataset', dataset);
+	
 	    return {
 	        chart: chart,
 	        categories: categories,
 	        dataset: dataset
 	    };
 	};
-
+	
 	ChartBuilder.prototype.pieDataBuilder = function () {
 	    var chart = {};
+	    chart.caption = this.selectedMeasures[0];
+	
 	    var data = [];
-
+	
 	    for (var i = 0; i < this.selectedDimensions.length; i++) {
 	        var sd = this.selectedDimensions[i];
 	        var labels = Object.keys(this.data[sd]);
@@ -268,19 +281,20 @@
 	                label: label,
 	                value: value
 	            };
-
+	
 	            data.push(obj);
 	        }
 	    }
-	    console.log(data);
-
+	
+	    console.log('data', data);
+	
 	    return {
 	        chart: chart,
 	        data: data
 	    };
 	};
-
-
+	
+	
 	window.addEventListener('load', function () {
 	    window.chartBuilder = new ChartBuilder('/data/data.json');
 	});
@@ -291,13 +305,13 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
-
+	
 	var emitter = __webpack_require__(2);
 	var crossvent = __webpack_require__(9);
 	var classes = __webpack_require__(12);
 	var doc = document;
 	var documentElement = doc.documentElement;
-
+	
 	function dragula (initialContainers, options) {
 	  var len = arguments.length;
 	  if (len === 1 && Array.isArray(initialContainers) === false) {
@@ -317,7 +331,7 @@
 	  var _renderTimer; // timer for setTimeout renderMirrorImage
 	  var _lastDropTarget = null; // last container item was over
 	  var _grabbed; // holds mousedown context until first mousemove
-
+	
 	  var o = options || {};
 	  if (o.moves === void 0) { o.moves = always; }
 	  if (o.accepts === void 0) { o.accepts = always; }
@@ -331,7 +345,7 @@
 	  if (o.direction === void 0) { o.direction = 'vertical'; }
 	  if (o.ignoreInputTextSelection === void 0) { o.ignoreInputTextSelection = true; }
 	  if (o.mirrorContainer === void 0) { o.mirrorContainer = doc.body; }
-
+	
 	  var drake = emitter({
 	    containers: o.containers,
 	    start: manualStart,
@@ -342,51 +356,51 @@
 	    canMove: canMove,
 	    dragging: false
 	  });
-
+	
 	  if (o.removeOnSpill === true) {
 	    drake.on('over', spillOver).on('out', spillOut);
 	  }
-
+	
 	  events();
-
+	
 	  return drake;
-
+	
 	  function isContainer (el) {
 	    return drake.containers.indexOf(el) !== -1 || o.isContainer(el);
 	  }
-
+	
 	  function events (remove) {
 	    var op = remove ? 'remove' : 'add';
 	    touchy(documentElement, op, 'mousedown', grab);
 	    touchy(documentElement, op, 'mouseup', release);
 	  }
-
+	
 	  function eventualMovements (remove) {
 	    var op = remove ? 'remove' : 'add';
 	    touchy(documentElement, op, 'mousemove', startBecauseMouseMoved);
 	  }
-
+	
 	  function movements (remove) {
 	    var op = remove ? 'remove' : 'add';
 	    crossvent[op](documentElement, 'selectstart', preventGrabbed); // IE8
 	    crossvent[op](documentElement, 'click', preventGrabbed);
 	  }
-
+	
 	  function destroy () {
 	    events(true);
 	    release({});
 	  }
-
+	
 	  function preventGrabbed (e) {
 	    if (_grabbed) {
 	      e.preventDefault();
 	    }
 	  }
-
+	
 	  function grab (e) {
 	    _moveX = e.clientX;
 	    _moveY = e.clientY;
-
+	
 	    var ignore = whichMouseButton(e) !== 1 || e.metaKey || e.ctrlKey;
 	    if (ignore) {
 	      return; // we only care about honest-to-god left clicks and touch events
@@ -406,7 +420,7 @@
 	      }
 	    }
 	  }
-
+	
 	  function startBecauseMouseMoved (e) {
 	    if (!_grabbed) {
 	      return;
@@ -427,22 +441,22 @@
 	        return;
 	      }
 	    }
-
+	
 	    var grabbed = _grabbed; // call to end() unsets _grabbed
 	    eventualMovements(true);
 	    movements();
 	    end();
 	    start(grabbed);
-
+	
 	    var offset = getOffset(_item);
 	    _offsetX = getCoord('pageX', e) - offset.left;
 	    _offsetY = getCoord('pageY', e) - offset.top;
-
+	
 	    classes.add(_copy || _item, 'gu-transit');
 	    renderMirrorImage();
 	    drag(e);
 	  }
-
+	
 	  function canStart (item) {
 	    if (drake.dragging && _mirror) {
 	      return;
@@ -467,47 +481,47 @@
 	    if (o.invalid(item, handle)) {
 	      return;
 	    }
-
+	
 	    var movable = o.moves(item, source, handle, nextEl(item));
 	    if (!movable) {
 	      return;
 	    }
-
+	
 	    return {
 	      item: item,
 	      source: source
 	    };
 	  }
-
+	
 	  function canMove (item) {
 	    return !!canStart(item);
 	  }
-
+	
 	  function manualStart (item) {
 	    var context = canStart(item);
 	    if (context) {
 	      start(context);
 	    }
 	  }
-
+	
 	  function start (context) {
 	    if (isCopy(context.item, context.source)) {
 	      _copy = context.item.cloneNode(true);
 	      drake.emit('cloned', _copy, context.item, 'copy');
 	    }
-
+	
 	    _source = context.source;
 	    _item = context.item;
 	    _initialSibling = _currentSibling = nextEl(context.item);
-
+	
 	    drake.dragging = true;
 	    drake.emit('drag', _item, _source);
 	  }
-
+	
 	  function invalidTarget () {
 	    return false;
 	  }
-
+	
 	  function end () {
 	    if (!drake.dragging) {
 	      return;
@@ -515,16 +529,16 @@
 	    var item = _copy || _item;
 	    drop(item, getParent(item));
 	  }
-
+	
 	  function ungrab () {
 	    _grabbed = false;
 	    eventualMovements(true);
 	    movements(true);
 	  }
-
+	
 	  function release (e) {
 	    ungrab();
-
+	
 	    if (!drake.dragging) {
 	      return;
 	    }
@@ -541,7 +555,7 @@
 	      cancel();
 	    }
 	  }
-
+	
 	  function drop (item, target) {
 	    var parent = getParent(item);
 	    if (_copy && o.copySortSource && target === _source) {
@@ -554,7 +568,7 @@
 	    }
 	    cleanup();
 	  }
-
+	
 	  function remove () {
 	    if (!drake.dragging) {
 	      return;
@@ -567,7 +581,7 @@
 	    drake.emit(_copy ? 'cancel' : 'remove', item, parent, _source);
 	    cleanup();
 	  }
-
+	
 	  function cancel (revert) {
 	    if (!drake.dragging) {
 	      return;
@@ -592,7 +606,7 @@
 	    }
 	    cleanup();
 	  }
-
+	
 	  function cleanup () {
 	    var item = _copy || _item;
 	    ungrab();
@@ -610,7 +624,7 @@
 	    drake.emit('dragend', item);
 	    _source = _item = _copy = _initialSibling = _currentSibling = _renderTimer = _lastDropTarget = null;
 	  }
-
+	
 	  function isInitialPlacement (target, s) {
 	    var sibling;
 	    if (s !== void 0) {
@@ -622,20 +636,20 @@
 	    }
 	    return target === _source && sibling === _initialSibling;
 	  }
-
+	
 	  function findDropTarget (elementBehindCursor, clientX, clientY) {
 	    var target = elementBehindCursor;
 	    while (target && !accepted()) {
 	      target = getParent(target);
 	    }
 	    return target;
-
+	
 	    function accepted () {
 	      var droppable = isContainer(target);
 	      if (droppable === false) {
 	        return false;
 	      }
-
+	
 	      var immediate = getImmediateChild(target, elementBehindCursor);
 	      var reference = getReference(target, immediate, clientX, clientY);
 	      var initial = isInitialPlacement(target, reference);
@@ -645,21 +659,21 @@
 	      return o.accepts(_item, target, _source, reference);
 	    }
 	  }
-
+	
 	  function drag (e) {
 	    if (!_mirror) {
 	      return;
 	    }
 	    e.preventDefault();
-
+	
 	    var clientX = getCoord('clientX', e);
 	    var clientY = getCoord('clientY', e);
 	    var x = clientX - _offsetX;
 	    var y = clientY - _offsetY;
-
+	
 	    _mirror.style.left = x + 'px';
 	    _mirror.style.top = y + 'px';
-
+	
 	    var item = _copy || _item;
 	    var elementBehindCursor = getElementBehindPoint(_mirror, clientX, clientY);
 	    var dropTarget = findDropTarget(elementBehindCursor, clientX, clientY);
@@ -702,15 +716,15 @@
 	    function over () { if (changed) { moved('over'); } }
 	    function out () { if (_lastDropTarget) { moved('out'); } }
 	  }
-
+	
 	  function spillOver (el) {
 	    classes.rm(el, 'gu-hide');
 	  }
-
+	
 	  function spillOut (el) {
 	    if (drake.dragging) { classes.add(el, 'gu-hide'); }
 	  }
-
+	
 	  function renderMirrorImage () {
 	    if (_mirror) {
 	      return;
@@ -726,7 +740,7 @@
 	    classes.add(o.mirrorContainer, 'gu-unselectable');
 	    drake.emit('cloned', _mirror, _item, 'mirror');
 	  }
-
+	
 	  function removeMirrorImage () {
 	    if (_mirror) {
 	      classes.rm(o.mirrorContainer, 'gu-unselectable');
@@ -735,7 +749,7 @@
 	      _mirror = null;
 	    }
 	  }
-
+	
 	  function getImmediateChild (dropTarget, target) {
 	    var immediate = target;
 	    while (immediate !== dropTarget && getParent(immediate) !== dropTarget) {
@@ -746,12 +760,12 @@
 	    }
 	    return immediate;
 	  }
-
+	
 	  function getReference (dropTarget, target, x, y) {
 	    var horizontal = o.direction === 'horizontal';
 	    var reference = target !== dropTarget ? inside() : outside();
 	    return reference;
-
+	
 	    function outside () { // slower, but able to figure out any position
 	      var len = dropTarget.children.length;
 	      var i;
@@ -765,7 +779,7 @@
 	      }
 	      return null;
 	    }
-
+	
 	    function inside () { // faster, but only available if dropped inside a child element
 	      var rect = target.getBoundingClientRect();
 	      if (horizontal) {
@@ -773,17 +787,17 @@
 	      }
 	      return resolve(y > rect.top + getRectHeight(rect) / 2);
 	    }
-
+	
 	    function resolve (after) {
 	      return after ? nextEl(target) : target;
 	    }
 	  }
-
+	
 	  function isCopy (item, container) {
 	    return typeof o.copy === 'boolean' ? o.copy : o.copy(item, container);
 	  }
 	}
-
+	
 	function touchy (el, op, type, fn) {
 	  var touch = {
 	    mouseup: 'touchend',
@@ -809,7 +823,7 @@
 	    crossvent[op](el, type, fn);
 	  }
 	}
-
+	
 	function whichMouseButton (e) {
 	  if (e.touches !== void 0) { return e.touches.length; }
 	  if (e.which !== void 0 && e.which !== 0) { return e.which; } // see https://github.com/bevacqua/dragula/issues/261
@@ -819,7 +833,7 @@
 	    return button & 1 ? 1 : button & 2 ? 3 : (button & 4 ? 2 : 0);
 	  }
 	}
-
+	
 	function getOffset (el) {
 	  var rect = el.getBoundingClientRect();
 	  return {
@@ -827,7 +841,7 @@
 	    top: rect.top + getScroll('scrollTop', 'pageYOffset')
 	  };
 	}
-
+	
 	function getScroll (scrollProp, offsetProp) {
 	  if (typeof global[offsetProp] !== 'undefined') {
 	    return global[offsetProp];
@@ -837,7 +851,7 @@
 	  }
 	  return doc.body[scrollProp];
 	}
-
+	
 	function getElementBehindPoint (point, x, y) {
 	  var p = point || {};
 	  var state = p.className;
@@ -847,7 +861,7 @@
 	  p.className = state;
 	  return el;
 	}
-
+	
 	function never () { return false; }
 	function always () { return true; }
 	function getRectWidth (rect) { return rect.width || (rect.right - rect.left); }
@@ -860,7 +874,7 @@
 	  if (el.contentEditable === 'true') { return true; } // found a contentEditable element in the chain
 	  return isEditable(getParent(el)); // contentEditable is set to 'inherit'
 	}
-
+	
 	function nextEl (el) {
 	  return el.nextElementSibling || manually();
 	  function manually () {
@@ -871,7 +885,7 @@
 	    return sibling;
 	  }
 	}
-
+	
 	function getEventHost (e) {
 	  // on touchend event, we have to use `e.changedTouches`
 	  // see http://stackoverflow.com/questions/7192563/touchend-event-properties
@@ -884,7 +898,7 @@
 	  }
 	  return e;
 	}
-
+	
 	function getCoord (coord, e) {
 	  var host = getEventHost(e);
 	  var missMap = {
@@ -896,9 +910,9 @@
 	  }
 	  return host[coord];
 	}
-
+	
 	module.exports = dragula;
-
+	
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
@@ -906,10 +920,10 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	var atoa = __webpack_require__(3);
 	var debounce = __webpack_require__(4);
-
+	
 	module.exports = function emitter (thing, options) {
 	  var opts = options || {};
 	  var evt = {};
@@ -973,9 +987,9 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
-
+	
 	var ticky = __webpack_require__(5);
-
+	
 	module.exports = function debounce (fn, args, ctx) {
 	  if (!fn) { return; }
 	  ticky(function run () {
@@ -994,7 +1008,7 @@
 	} else {
 	  tick = function (fn) { setTimeout(fn, 0); };
 	}
-
+	
 	module.exports = tick;
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(6).setImmediate))
 
@@ -1003,9 +1017,9 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	var apply = Function.prototype.apply;
-
+	
 	// DOM APIs, for completeness
-
+	
 	exports.setTimeout = function() {
 	  return new Timeout(apply.call(setTimeout, window, arguments), clearTimeout);
 	};
@@ -1018,7 +1032,7 @@
 	    timeout.close();
 	  }
 	};
-
+	
 	function Timeout(id, clearFn) {
 	  this._id = id;
 	  this._clearFn = clearFn;
@@ -1027,21 +1041,21 @@
 	Timeout.prototype.close = function() {
 	  this._clearFn.call(window, this._id);
 	};
-
+	
 	// Does not start the time, just sets up the members needed.
 	exports.enroll = function(item, msecs) {
 	  clearTimeout(item._idleTimeoutId);
 	  item._idleTimeout = msecs;
 	};
-
+	
 	exports.unenroll = function(item) {
 	  clearTimeout(item._idleTimeoutId);
 	  item._idleTimeout = -1;
 	};
-
+	
 	exports._unrefActive = exports.active = function(item) {
 	  clearTimeout(item._idleTimeoutId);
-
+	
 	  var msecs = item._idleTimeout;
 	  if (msecs >= 0) {
 	    item._idleTimeoutId = setTimeout(function onTimeout() {
@@ -1050,7 +1064,7 @@
 	    }, msecs);
 	  }
 	};
-
+	
 	// setimmediate attaches itself to the global object
 	__webpack_require__(7);
 	exports.setImmediate = setImmediate;
@@ -1063,17 +1077,17 @@
 
 	/* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
 	    "use strict";
-
+	
 	    if (global.setImmediate) {
 	        return;
 	    }
-
+	
 	    var nextHandle = 1; // Spec says greater than zero
 	    var tasksByHandle = {};
 	    var currentlyRunningATask = false;
 	    var doc = global.document;
 	    var registerImmediate;
-
+	
 	    function setImmediate(callback) {
 	      // Callback can either be a function or a string
 	      if (typeof callback !== "function") {
@@ -1090,11 +1104,11 @@
 	      registerImmediate(nextHandle);
 	      return nextHandle++;
 	    }
-
+	
 	    function clearImmediate(handle) {
 	        delete tasksByHandle[handle];
 	    }
-
+	
 	    function run(task) {
 	        var callback = task.callback;
 	        var args = task.args;
@@ -1116,7 +1130,7 @@
 	            break;
 	        }
 	    }
-
+	
 	    function runIfPresent(handle) {
 	        // From the spec: "Wait until any invocations of this algorithm started before this one have completed."
 	        // So if we're currently running a task, we'll need to delay this invocation.
@@ -1137,13 +1151,13 @@
 	            }
 	        }
 	    }
-
+	
 	    function installNextTickImplementation() {
 	        registerImmediate = function(handle) {
 	            process.nextTick(function () { runIfPresent(handle); });
 	        };
 	    }
-
+	
 	    function canUsePostMessage() {
 	        // The test against `importScripts` prevents this implementation from being installed inside a web worker,
 	        // where `global.postMessage` means something completely different and can't be used for this purpose.
@@ -1158,12 +1172,12 @@
 	            return postMessageIsAsynchronous;
 	        }
 	    }
-
+	
 	    function installPostMessageImplementation() {
 	        // Installs an event handler on `global` for the `message` event: see
 	        // * https://developer.mozilla.org/en/DOM/window.postMessage
 	        // * http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#crossDocumentMessages
-
+	
 	        var messagePrefix = "setImmediate$" + Math.random() + "$";
 	        var onGlobalMessage = function(event) {
 	            if (event.source === global &&
@@ -1172,30 +1186,30 @@
 	                runIfPresent(+event.data.slice(messagePrefix.length));
 	            }
 	        };
-
+	
 	        if (global.addEventListener) {
 	            global.addEventListener("message", onGlobalMessage, false);
 	        } else {
 	            global.attachEvent("onmessage", onGlobalMessage);
 	        }
-
+	
 	        registerImmediate = function(handle) {
 	            global.postMessage(messagePrefix + handle, "*");
 	        };
 	    }
-
+	
 	    function installMessageChannelImplementation() {
 	        var channel = new MessageChannel();
 	        channel.port1.onmessage = function(event) {
 	            var handle = event.data;
 	            runIfPresent(handle);
 	        };
-
+	
 	        registerImmediate = function(handle) {
 	            channel.port2.postMessage(handle);
 	        };
 	    }
-
+	
 	    function installReadyStateChangeImplementation() {
 	        var html = doc.documentElement;
 	        registerImmediate = function(handle) {
@@ -1211,43 +1225,43 @@
 	            html.appendChild(script);
 	        };
 	    }
-
+	
 	    function installSetTimeoutImplementation() {
 	        registerImmediate = function(handle) {
 	            setTimeout(runIfPresent, 0, handle);
 	        };
 	    }
-
+	
 	    // If supported, we should attach to the prototype of global, since that is where setTimeout et al. live.
 	    var attachTo = Object.getPrototypeOf && Object.getPrototypeOf(global);
 	    attachTo = attachTo && attachTo.setTimeout ? attachTo : global;
-
+	
 	    // Don't get fooled by e.g. browserify environments.
 	    if ({}.toString.call(global.process) === "[object process]") {
 	        // For Node.js before 0.9
 	        installNextTickImplementation();
-
+	
 	    } else if (canUsePostMessage()) {
 	        // For non-IE10 modern browsers
 	        installPostMessageImplementation();
-
+	
 	    } else if (global.MessageChannel) {
 	        // For web workers, where supported
 	        installMessageChannelImplementation();
-
+	
 	    } else if (doc && "onreadystatechange" in doc.createElement("script")) {
 	        // For IE 6–8
 	        installReadyStateChangeImplementation();
-
+	
 	    } else {
 	        // For older browsers
 	        installSetTimeoutImplementation();
 	    }
-
+	
 	    attachTo.setImmediate = setImmediate;
 	    attachTo.clearImmediate = clearImmediate;
 	}(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
-
+	
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }()), __webpack_require__(8)))
 
 /***/ },
@@ -1256,15 +1270,15 @@
 
 	// shim for using process in browser
 	var process = module.exports = {};
-
+	
 	// cached from whatever global is present so that test runners that stub it
 	// don't break things.  But we need to wrap it in a try catch in case it is
 	// wrapped in strict mode code which doesn't define any globals.  It's inside a
 	// function because try/catches deoptimize in certain engines.
-
+	
 	var cachedSetTimeout;
 	var cachedClearTimeout;
-
+	
 	function defaultSetTimout() {
 	    throw new Error('setTimeout has not been defined');
 	}
@@ -1313,8 +1327,8 @@
 	            return cachedSetTimeout.call(this, fun, 0);
 	        }
 	    }
-
-
+	
+	
 	}
 	function runClearTimeout(marker) {
 	    if (cachedClearTimeout === clearTimeout) {
@@ -1339,15 +1353,15 @@
 	            return cachedClearTimeout.call(this, marker);
 	        }
 	    }
-
-
-
+	
+	
+	
 	}
 	var queue = [];
 	var draining = false;
 	var currentQueue;
 	var queueIndex = -1;
-
+	
 	function cleanUpNextTick() {
 	    if (!draining || !currentQueue) {
 	        return;
@@ -1362,14 +1376,14 @@
 	        drainQueue();
 	    }
 	}
-
+	
 	function drainQueue() {
 	    if (draining) {
 	        return;
 	    }
 	    var timeout = runTimeout(cleanUpNextTick);
 	    draining = true;
-
+	
 	    var len = queue.length;
 	    while(len) {
 	        currentQueue = queue;
@@ -1386,7 +1400,7 @@
 	    draining = false;
 	    runClearTimeout(timeout);
 	}
-
+	
 	process.nextTick = function (fun) {
 	    var args = new Array(arguments.length - 1);
 	    if (arguments.length > 1) {
@@ -1399,7 +1413,7 @@
 	        runTimeout(drainQueue);
 	    }
 	};
-
+	
 	// v8 likes predictible objects
 	function Item(fun, array) {
 	    this.fun = fun;
@@ -1414,9 +1428,9 @@
 	process.argv = [];
 	process.version = ''; // empty string to avoid regexp issues
 	process.versions = {};
-
+	
 	function noop() {}
-
+	
 	process.on = noop;
 	process.addListener = noop;
 	process.once = noop;
@@ -1424,11 +1438,11 @@
 	process.removeListener = noop;
 	process.removeAllListeners = noop;
 	process.emit = noop;
-
+	
 	process.binding = function (name) {
 	    throw new Error('process.binding is not supported');
 	};
-
+	
 	process.cwd = function () { return '/' };
 	process.chdir = function (dir) {
 	    throw new Error('process.chdir is not supported');
@@ -1441,44 +1455,44 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
-
+	
 	var customEvent = __webpack_require__(10);
 	var eventmap = __webpack_require__(11);
 	var doc = global.document;
 	var addEvent = addEventEasy;
 	var removeEvent = removeEventEasy;
 	var hardCache = [];
-
+	
 	if (!global.addEventListener) {
 	  addEvent = addEventHard;
 	  removeEvent = removeEventHard;
 	}
-
+	
 	module.exports = {
 	  add: addEvent,
 	  remove: removeEvent,
 	  fabricate: fabricateEvent
 	};
-
+	
 	function addEventEasy (el, type, fn, capturing) {
 	  return el.addEventListener(type, fn, capturing);
 	}
-
+	
 	function addEventHard (el, type, fn) {
 	  return el.attachEvent('on' + type, wrap(el, type, fn));
 	}
-
+	
 	function removeEventEasy (el, type, fn, capturing) {
 	  return el.removeEventListener(type, fn, capturing);
 	}
-
+	
 	function removeEventHard (el, type, fn) {
 	  var listener = unwrap(el, type, fn);
 	  if (listener) {
 	    return el.detachEvent('on' + type, listener);
 	  }
 	}
-
+	
 	function fabricateEvent (el, type, model) {
 	  var e = eventmap.indexOf(type) === -1 ? makeCustomEvent() : makeClassicEvent();
 	  if (el.dispatchEvent) {
@@ -1500,7 +1514,7 @@
 	    return new customEvent(type, { detail: model });
 	  }
 	}
-
+	
 	function wrapperFactory (el, type, fn) {
 	  return function wrapper (originalEvent) {
 	    var e = originalEvent || global.event;
@@ -1511,7 +1525,7 @@
 	    fn.call(el, e);
 	  };
 	}
-
+	
 	function wrap (el, type, fn) {
 	  var wrapper = unwrap(el, type, fn) || wrapperFactory(el, type, fn);
 	  hardCache.push({
@@ -1522,7 +1536,7 @@
 	  });
 	  return wrapper;
 	}
-
+	
 	function unwrap (el, type, fn) {
 	  var i = find(el, type, fn);
 	  if (i) {
@@ -1531,7 +1545,7 @@
 	    return wrapper;
 	  }
 	}
-
+	
 	function find (el, type, fn) {
 	  var i, item;
 	  for (i = 0; i < hardCache.length; i++) {
@@ -1541,7 +1555,7 @@
 	    }
 	  }
 	}
-
+	
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
@@ -1550,7 +1564,7 @@
 
 	/* WEBPACK VAR INJECTION */(function(global) {
 	var NativeCustomEvent = global.CustomEvent;
-
+	
 	function useNative () {
 	  try {
 	    var p = new NativeCustomEvent('cat', { detail: { foo: 'bar' } });
@@ -1559,7 +1573,7 @@
 	  }
 	  return false;
 	}
-
+	
 	/**
 	 * Cross-browser `CustomEvent` constructor.
 	 *
@@ -1567,9 +1581,9 @@
 	 *
 	 * @public
 	 */
-
+	
 	module.exports = useNative() ? NativeCustomEvent :
-
+	
 	// IE >= 9
 	'function' === typeof document.createEvent ? function CustomEvent (type, params) {
 	  var e = document.createEvent('CustomEvent');
@@ -1580,7 +1594,7 @@
 	  }
 	  return e;
 	} :
-
+	
 	// IE <= 8
 	function CustomEvent (type, params) {
 	  var e = document.createEventObject();
@@ -1596,7 +1610,7 @@
 	  }
 	  return e;
 	}
-
+	
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
@@ -1604,19 +1618,19 @@
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(global) {'use strict';
-
+	
 	var eventmap = [];
 	var eventname = '';
 	var ron = /^on/;
-
+	
 	for (eventname in global) {
 	  if (ron.test(eventname)) {
 	    eventmap.push(eventname.slice(2));
 	  }
 	}
-
+	
 	module.exports = eventmap;
-
+	
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
@@ -1624,11 +1638,11 @@
 /***/ function(module, exports) {
 
 	'use strict';
-
+	
 	var cache = {};
 	var start = '(?:^|\\s)';
 	var end = '(?:\\s|$)';
-
+	
 	function lookupClass (className) {
 	  var cached = cache[className];
 	  if (cached) {
@@ -1638,7 +1652,7 @@
 	  }
 	  return cached;
 	}
-
+	
 	function addClass (el, className) {
 	  var current = el.className;
 	  if (!current.length) {
@@ -1647,11 +1661,11 @@
 	    el.className += ' ' + className;
 	  }
 	}
-
+	
 	function rmClass (el, className) {
 	  el.className = el.className.replace(lookupClass(className), ' ').trim();
 	}
-
+	
 	module.exports = {
 	  add: addClass,
 	  rm: rmClass
@@ -1666,12 +1680,12 @@
 	 FusionCharts JavaScript Library
 	 Copyright FusionCharts Technologies LLP
 	 License Information at <http://www.fusioncharts.com/license>
-
+	
 	 @version 3.11.3-sr.1
 	 FusionCharts JavaScript Library
 	 Copyright FusionCharts Technologies LLP
 	 License Information at <http://www.fusioncharts.com/license>
-
+	
 	 @version 3.11.3-sr.1
 	 FusionCharts JavaScript Library
 	 Copyright FusionCharts Technologies LLP
@@ -3522,7 +3536,7 @@
 /***/ function(module, exports) {
 
 	/* WEBPACK VAR INJECTION */(function(__webpack_amd_options__) {module.exports = __webpack_amd_options__;
-
+	
 	/* WEBPACK VAR INJECTION */}.call(exports, {}))
 
 /***/ },
@@ -3751,3 +3765,4 @@
 
 /***/ }
 /******/ ]);
+//# sourceMappingURL=bundle.js.map

@@ -23,40 +23,6 @@ var ChartBuilder = function (dataUrl) {
     this.typeSelectorElm.addEventListener('change', this.chartConstruct.bind(this));
 };
 
-ChartBuilder.prototype.attachDragHandler = function () {
-    var that = this;
-    var dimDragger = Dragula([this.dimensionsElm, this.selectedDimensionsElm]);
-    var mesDragger = Dragula([this.measuresElm, this.selectedMeasuresElm]);
-
-    dimDragger.on('drop', function (el, target, source, sibling) {
-        if (target === that.selectedDimensionsElm && source === that.dimensionsElm) {
-            that.dimensions.pop(el.innerText);
-            that.selectedDimensions.push(el.innerText);
-        }
-
-        if (target === that.dimensionsElm && source === that.selectedDimensionsElm) {
-            that.dimensions.push(el.innerText);
-            that.selectedDimensions.pop(el.innerText);
-        }
-
-        that.chartConstruct();
-    });
-
-    mesDragger.on('drop', function (el, target, source, sibling) {
-        if (target === that.selectedMeasuresElm && source === that.measuresElm) {
-            that.measures.pop(el.innerText);
-            that.selectedMeasures.push(el.innerText);
-        }
-
-        if (target === that.measuresElm && source === that.selectedMeasuresElm) {
-            that.measures.push(el.innerText);
-            that.selectedMeasures.pop(el.innerText);
-        }
-
-        that.chartConstruct();
-    });
-};
-
 ChartBuilder.prototype.parseData = function () {
     var that = this;
 
@@ -64,12 +30,15 @@ ChartBuilder.prototype.parseData = function () {
         return resp.json();
     }).then(function (json) {
         that.data = json;
-        that.addDimensions(Object.getOwnPropertyNames(that.data));
 
-        var firstDimChild = Object.getOwnPropertyNames(that.data[that.dimensions[0]])[0];
-        that.addMeasures(Object.getOwnPropertyNames(that.data[that.dimensions[0]][firstDimChild]));
+        that.addDimensions(Object.keys(that.data));
+
+        var firstDim = that.data[that.dimensions[0]];
+        var firstDimChild = Object.keys(firstDim)[0];
+
+        that.addMeasures(Object.keys(firstDim[firstDimChild]));
     }).catch(function () {
-        console.log('There is an error is fetching data');
+        console.log('There is an error is fetching and storing data');
     });
 };
 
@@ -101,6 +70,47 @@ ChartBuilder.prototype.addMeasures = function (meas) {
     });
 };
 
+ChartBuilder.prototype.attachDragHandler = function () {
+    var that = this;
+    var dimDragger = Dragula([this.dimensionsElm, this.selectedDimensionsElm]);
+    var mesDragger = Dragula([this.measuresElm, this.selectedMeasuresElm]);
+
+    var arrayRemove = function (arr, elm) {
+        var index = arr.indexOf(elm);
+        if (index > -1) {
+            arr.splice(index, 1);
+        }
+    };
+
+    dimDragger.on('drop', function (el, target, source, sibling) {
+        if (target === that.selectedDimensionsElm && source === that.dimensionsElm) {
+            that.selectedDimensions.push(el.innerText);
+            arrayRemove(that.dimensions, el.innerText);
+        }
+
+        if (target === that.dimensionsElm && source === that.selectedDimensionsElm) {
+            that.dimensions.push(el.innerText);
+            arrayRemove(that.selectedDimensions, el.innerText);
+        }
+
+        that.chartConstruct();
+    });
+
+    mesDragger.on('drop', function (el, target, source, sibling) {
+        if (target === that.selectedMeasuresElm && source === that.measuresElm) {
+            that.selectedMeasures.push(el.innerText);
+            arrayRemove(that.measures, el.innerText);
+        }
+
+        if (target === that.measuresElm && source === that.selectedMeasuresElm) {
+            that.measures.push(el.innerText);
+            arrayRemove(that.selectedMeasures, el.innerText);
+        }
+
+        that.chartConstruct();
+    });
+};
+
 ChartBuilder.prototype.chartConstruct = function () {
     var that = this;
 
@@ -129,8 +139,8 @@ ChartBuilder.prototype.chartConstruct = function () {
     }
 
     console.log('Constructing now');
-    console.log(this.selectedDimensions);
-    console.log(this.selectedMeasures);
+    console.log('Dimensions', this.selectedDimensions);
+    console.log('Measures', this.selectedMeasures);
 
     var chartLiteral = {
         type: type,
@@ -167,7 +177,8 @@ ChartBuilder.prototype.mscolumnDataBuilder = function () {
     var categories = [{
         category: category
     }];
-    console.log(categories);
+    
+    console.log('categories', categories);
 
     var dataset = [];
     for (var i = 0; i < this.selectedMeasures.length; i++) {
@@ -183,7 +194,6 @@ ChartBuilder.prototype.mscolumnDataBuilder = function () {
             var val;
 
             for (var k = 0; k < this.selectedDimensions.length; k++) {
-                // console.log(this.selectedDimensions[k], cat.label, sm);
                 if (this.data[this.selectedDimensions[k]][cat.label]) {
                     val = this.data[this.selectedDimensions[k]][cat.label][sm];
                 }
@@ -199,7 +209,8 @@ ChartBuilder.prototype.mscolumnDataBuilder = function () {
             data: smData
         });
     }
-    console.log(dataset);
+
+    console.log('dataset', dataset);
 
     return {
         chart: chart,
@@ -210,6 +221,8 @@ ChartBuilder.prototype.mscolumnDataBuilder = function () {
 
 ChartBuilder.prototype.pieDataBuilder = function () {
     var chart = {};
+    chart.caption = this.selectedMeasures[0];
+
     var data = [];
 
     for (var i = 0; i < this.selectedDimensions.length; i++) {
@@ -226,7 +239,8 @@ ChartBuilder.prototype.pieDataBuilder = function () {
             data.push(obj);
         }
     }
-    console.log(data);
+
+    console.log('data', data);
 
     return {
         chart: chart,
