@@ -41,13 +41,10 @@ gulp.task('styles', () => {
     ];
 
     return gulp.src([
-        'app/styles/**/*.scss',
-        'app/styles/**/*.css'
+        'app/styles/**/*.scss'
     ])
     .pipe($.sourcemaps.init())
-    .pipe($.sass({
-        precision: 10
-    }).on('error', $.sass.logError))
+    .pipe($.sass().on('error', $.sass.logError))
     .pipe($.autoprefixer(AUTOPREFIXER_BROWSERS))
     .pipe(gulp.dest('app/styles'))
     .pipe($.if('*.css', $.cssnano()))

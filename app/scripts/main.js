@@ -1,44 +1,26 @@
+const Dragula = require('dragula');
 const FusionChats = require('fusioncharts');
 require("fusioncharts/fusioncharts.charts")(FusionCharts);
-const Dragula = require('dragula');
 
-var ChartBuilder = function () {
+
+var ChartBuilder = function (dataUrl) {
     this.chartElm = document.getElementById('chart');
     this.dimensionsElm = document.getElementById('dimensions');
     this.selectedDimensionsElm = document.getElementById('selectedDimensions');
     this.measuresElm = document.getElementById('measures');
     this.selectedMeasuresElm = document.getElementById('selectedMeasures');
     this.typeSelectorElm = document.getElementById('typeSelector');
-    this.dataUrl = "/data/data.json";
+    this.dataUrl = dataUrl;
 
     this.dimensions = [];
     this.selectedDimensions = [];
     this.measures = [];
     this.selectedMeasures = [];
 
-    this.initChart();
     this.attachDragHandler();
     this.parseData();
 
-    this.typeSelectorElm.addEventListener('change', this.typeSelectHandler.bind(this));
-};
-
-ChartBuilder.prototype.typeSelectHandler = function (evt) {
-    this.chartConstruct();
-};
-
-ChartBuilder.prototype.initChart = function () {
-    var that = this;
-
-    FusionChats.ready(function () {
-        that.chart = new FusionChats ({
-            type: 'column2D',
-            renderAt: that.chartElm,
-            height: '100%',
-            width: '100%',
-            dataFormat: 'json'
-        });
-    });
+    this.typeSelectorElm.addEventListener('change', this.chartConstruct.bind(this));
 };
 
 ChartBuilder.prototype.attachDragHandler = function () {
@@ -254,5 +236,5 @@ ChartBuilder.prototype.pieDataBuilder = function () {
 
 
 window.addEventListener('load', function () {
-    window.chartBuilder = new ChartBuilder();
+    window.chartBuilder = new ChartBuilder('/data/data.json');
 });
